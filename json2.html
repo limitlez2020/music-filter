@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+        <head>
+                <title>My Music Collection</title>
+                <link rel="stylesheet" type="text/css" href="json2.css">
+        </head>
+        
+        <body>
+                <!-- This line below loads the song data -->
+                <pre id="rawdata"></pre> 
+
+                <h1>Music Collection</h1>
+
+                <form>
+                        <label for="genre-select">Select a genre</label>
+                        </br>
+                        <select id="genre-select">
+                                <option value="all">All</option>
+                        </select>
+                        <button type="button" id="filter-button">Filter</button>
+                </form>
+
+                <table>
+                        <thead>
+                                <tr>
+                                        <th>Title</th>
+                                        <th>Artist(s)</th>
+                                        <th>Genre(s)</th>
+                                        <th>Year</th>
+                                </tr>
+                        </thead>
+                        <tbody id="music-table"></tbody>
+                </table>
+
+
+                <script>
+                        fetch("data.json")
+                        .then(response => response.json())
+                        .then(data => 
+                        {
+                                /* To print the data at the top of the screen */
+                                // const rawdata = JSON.stringify(data);
+                                // document.getElementById("rawdata").textContent = rawdata;
+
+
+                                const genreSelect = document.getElementById("genre-select");
+                                const musicTable = document.getElementById("music-table");
+                                const songs = data.songs;
+
+
+                                /* Populate the genre select dropdown */
+                                const genres = new Set();
+                                songs.forEach(song => 
+                                {
+                                        song.genres.forEach(genre => 
+                                        {
+                                                genres.add(genre);
+                                        });
+                                });
+                                genres.forEach(genre => 
+                                {
+                                        const option = document.createElement("option");
+                                        option.value = genre;
+                                        option.text = genre;
+                                        genreSelect.add(option);
+                                });
+                                
+
+                                /* Display all songs by default */
+                                displaySongs(songs);
+
+                                
+                                /* Filter songs by selected genre */
+                                const filterButton = document.getElementById("filter-button");
+                                filterButton.addEventListener("click", () =>
+                                {
+                                        const selectedGenre = genreSelect.value;
+                                        let filteredSongs;
+                                        if (selectedGenre === "all")
+                                        {
+                                            filteredSongs = songs;
+                                        } else
+                                        {
+                                            filteredSongs = songs.filter(song => song.genres.includes(selectedGenre));
+                                        }
+                                        displaySongs(filteredSongs);
+                                });
+                                
+
+                                /* Display the given songs in the music table */
+                                function displaySongs(songs)
+                                {
+                                        musicTable.innerHTML = "";
+                                        songs.forEach(song =>
+                                        {
+                                                const row = musicTable.insertRow();
+                                                const titleCell = row.insertCell();
+                                                const artistCell = row.insertCell();
+                                                const genresCell = row.insertCell();
+                                                const yearCell = row.insertCell();
+                                                titleCell.innerHTML = song.title;
+                                                artistCell.innerHTML = song.artists.join(", ");
+                                                genresCell.innerHTML = song.genres.join(", ");
+                                                yearCell.innerHTML = song.year;
+                                        });
+                                }
+                        })
+                        .catch(error => console.error(error));
+                </script>
+        </body>
+</html>
